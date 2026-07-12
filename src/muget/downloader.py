@@ -1,0 +1,744 @@
+from ytmusicapi import YTMusic
+import json
+import time
+import subprocess
+from pathlib import Path
+import urllib.request
+
+import logging
+import colorama
+
+from .utils import (force_best_cdn_cover, find_existing_folder)
+
+import logging 
+
+import re
+
+import shutil
+
+logger = logging.getLogger(__name__)
+
+
+import base64
+import struct
+from pathlib import Path
+
+from . import __version__
+
+def apply_metadata_ffmpeg(audio_file, metadata, cover_file=None):
+
+    try:
+        file_extension = audio_file.suffix.lower()
+        is_opus = file_extension == '.opus'
+        has_cover = cover_file and Path(cover_file).exists()
+        
+        # Prepare base command structure with all inputs (-i)
+        cmd = [
+            "ffmpeg",
+            "-loglevel", "error",
+            "-y",
+            "-i", str(audio_file),
+        ]
+        
+        # For M4A: add image as second input BEFORE metadata
+        if has_cover and not is_opus:
+            cmd.extend(["-i", str(cover_file)])
+        
+        # For Opus with cover: create temporary metadata file
+        metadata_file = None
+        if has_cover and is_opus:
+            try:
+                import tempfile
+                import base64
+                import struct
+                
+                with open(cover_file, 'rb') as f:
+                    image_data = f.read()
+                
+                # Create FLAC Picture structure
+                pic = bytearray()
+                pic.extend(struct.pack('>I', 3))  # type: 3 = front cover
+                
+                mime = "image/jpeg"
+                if cover_file.suffix.lower() == '.png':
+                    mime = "image/png"
+                
+                mime_bytes = mime.encode('utf-8')
+                pic.extend(struct.pack('>I', len(mime_bytes)))
+                pic.extend(mime_bytes)
+                
+                # Description (empty)
+                desc = b''
+                pic.extend(struct.pack('>I', len(desc)))
+                pic.extend(desc)
+                
+                # Dimensions (0 = unknown)
+                pic.extend(struct.pack('>I', 0))  # width
+                pic.extend(struct.pack('>I', 0))  # height
+                pic.extend(struct.pack('>I', 0))  # color depth
+                pic.extend(struct.pack('>I', 0))  # indexed colors
+                
+                # Image data
+                pic.extend(struct.pack('>I', len(image_data)))
+                pic.extend(image_data)
+                
+                # Encode in base64
+                cover_b64 = base64.b64encode(pic).decode('ascii')
+                
+                # Create temporary ffmetadata file
+                metadata_file = tempfile.NamedTemporaryFile(
+                    mode='w',
+                    suffix='.txt',
+                    delete=False,
+                    encoding='utf-8'
+                )
+                metadata_file.write(";FFMETADATA1\n")
+                metadata_file.write(f"METADATA_BLOCK_PICTURE={cover_b64}\n")
+                metadata_file.close()
+                
+                # Use the metadata file
+                cmd.extend(["-i", metadata_file.name])
+                cmd.extend(["-map_metadata", "1"])
+                
+            except Exception as e:
+                logger.warning(f"Failed to encode cover for Opus: {e}")
+                if metadata_file:
+                    Path(metadata_file.name).unlink(missing_ok=True)
+                    metadata_file = None
+        
+        # Add all metadata as arguments
+        if metadata.get("title"):
+            cmd.extend(["-metadata", f"title={metadata['title']}"])
+        
+        if metadata.get("artist"):
+            cmd.extend(["-metadata", f"artist={metadata['artist']}"])
+        
+        if metadata.get("album_artist"):
+            cmd.extend(["-metadata", f"album_artist={metadata['album_artist']}"])
+        
+        if metadata.get("album"):
+            cmd.extend(["-metadata", f"album={metadata['album']}"])
+
+        if not is_opus:
+            if metadata.get("track_number"):
+                if metadata.get("track_total"):
+                    cmd.extend(["-metadata", f"track={metadata['track_number']}/{metadata['track_total']}"])
+        else:
+            if metadata.get("track_number"):
+                cmd.extend(["-metadata", f"track={metadata['track_number']}"])        
+            if metadata.get("track_total"):
+                cmd.extend(["-metadata", f"tracktotal={metadata['track_total']}"])
+        
+        if metadata.get("year"):
+            cmd.extend(["-metadata", f"date={metadata['year']}"])
+        
+        if metadata.get("comment"):
+            cmd.extend(["-metadata", f"comment={metadata['comment']}"])
+        
+        if metadata.get("lyrics"):
+            cmd.extend(["-metadata", f"lyrics={metadata['lyrics']}"])
+        
+        if not is_opus:
+            cmd.extend(["-metadata", f"arranger=MuGet v{__version__}"])
+        else:
+            cmd.extend(["-metadata", f"organization=MuGet v{__version__}"])   
+        
+        
+        # Extended credits
+        if metadata.get("performers"):
+            performers = metadata["performers"]
+            if isinstance(performers, list):
+                performers_str = "; ".join(
+                    p.get("name", str(p)) if isinstance(p, dict) else str(p) 
+                    for p in performers
+                )
+            else:
+                performers_str = str(performers)
+            cmd.extend(["-metadata", f"performer={performers_str}"])
+        
+        if metadata.get("writers"):
+            writers = metadata["writers"]
+            if isinstance(writers, list):
+                writers_str = "; ".join(
+                    w.get("name", str(w)) if isinstance(w, dict) else str(w) 
+                    for w in writers
+                )
+            else:
+                writers_str = str(writers)
+            cmd.extend(["-metadata", f"composer={writers_str}"])
+        
+        if metadata.get("producers"):
+            producers = metadata["producers"]
+            if isinstance(producers, list):
+                producers_str = "; ".join(
+                    p.get("name", str(p)) if isinstance(p, dict) else str(p) 
+                    for p in producers
+                )
+            else:
+                producers_str = str(producers)
+            cmd.extend(["-metadata", f"producer={producers_str}"])
+        
+        if metadata.get("copyright"):
+            copyright_info = metadata["copyright"]
+            if isinstance(copyright_info, list):
+                copyright_str = "; ".join(str(c) for c in copyright_info)
+            else:
+                copyright_str = str(copyright_info)
+            cmd.extend(["-metadata", f"copyright={copyright_str}"])
+        
+        # Map streams and set codecs
+        if has_cover and not is_opus:
+            # M4A: map audio + video
+            cmd.extend([
+                "-map", "0:a",
+                "-map", "1:v",
+                "-c:a", "copy",
+                "-c:v", "mjpeg",
+                "-disposition:v", "attached_pic",
+            ])
+        elif has_cover and is_opus:
+            # Opus: map only audio (cover comes from metadata file)
+            cmd.extend([
+                "-map", "0:a",
+                "-c:a", "copy",
+            ])
+        else:
+            # No cover: just copy audio
+            cmd.extend(["-c:a", "copy"])
+        
+        # Temporary output file
+        temp_output = audio_file.with_suffix(f".temp{audio_file.suffix}")
+        cmd.append(str(temp_output))
+        
+        # Execute ffmpeg
+        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+        
+        # Clean up temporary metadata file
+        if metadata_file:
+            Path(metadata_file.name).unlink(missing_ok=True)
+        
+        # Replace original file with modified one
+        temp_output.replace(audio_file)
+        
+        logger.debug(f"Metadata applied successfully to {audio_file.name}")
+        return True
+        
+    except subprocess.CalledProcessError as e:
+        logger.warning(f"ffmpeg error writing metadata: {e.stderr[:200]}")
+        temp_output = audio_file.with_suffix(f".temp{audio_file.suffix}")
+        if temp_output.exists():
+            temp_output.unlink()
+        return False
+    except Exception as e:
+        logger.warning(f"Error writing metadata: {e}")
+        return False
+
+
+class YouTubeMusicDownloader:
+    def __init__(self, input_info, config, output_dir):
+        self.input_type = input_info["type"]
+        self.input_id = input_info["id"]
+        self.output_dir = Path(output_dir)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.temp_dir = self.output_dir / ".temp"
+        self.yt = YTMusic()
+        self.config = config
+
+        # JSON file for playlist only
+        self.playlist_file = (self.temp_dir / "playlist_completa.json")
+
+        CODEC_MAP = {
+            249: "opus",
+            250: "opus",
+            251: "opus",
+            774: "opus",
+            139: "aac",
+            140: "aac",
+            141: "aac",
+        }
+
+        itag = int(self.config["audio_itag"])
+
+        if itag not in CODEC_MAP:
+            logger.critical(
+                "[ERROR] Unsupported audio itag. "
+                "Please check your configuration file."
+            )
+            raise SystemExit(1)
+
+        self.audio_codec = CODEC_MAP[itag]
+
+    def prepare_temp_dir(self):
+        if self.temp_dir.exists():
+            shutil.rmtree(self.temp_dir)
+        self.temp_dir.mkdir(parents=True, exist_ok=True)
+
+    def cleanup_temp_dir(self):
+        if self.temp_dir.exists():
+            shutil.rmtree(self.temp_dir)        
+
+    def resolve_tracks(self):
+        if self.input_type == "song":
+            watch = self.yt.get_watch_playlist(self.input_id)
+            song = watch["tracks"][0]
+            return {"tracks": [song]}
+        elif self.input_type == "playlist":
+            playlist = self.yt.get_playlist(self.input_id, limit=None)
+            return {"tracks": playlist["tracks"]}
+        elif self.input_type == "album":
+            playlist = self.yt.get_playlist(self.input_id, limit=None)
+            return {"tracks": playlist["tracks"]}
+        raise ValueError(f"Unsupported input type: {self.input_type}")
+
+    def apply_metadata_and_cover(self, audio_file, metadata, cover_file=None):
+        """
+        Unified method that uses the global ffmpeg function.
+        """
+        return apply_metadata_ffmpeg(audio_file, metadata, cover_file)
+
+    def calculate_replaygain_album(self, album_dir):
+        try:
+            logger.debug(f"Replaygain: {album_dir.name}")
+            subprocess.run(["rsgain", "easy", str(album_dir)], check=True)
+            logger.debug("ReplayGain written")
+        except FileNotFoundError:
+            logger.warning("rsgain not installed")
+        except Exception as e:
+            logger.warning(f"ReplayGain failed: {e}")
+
+    def ms_to_lrc(self, ms):
+        minutes = ms // 60000
+        seconds = (ms % 60000) // 1000
+        centis = (ms % 1000) // 10
+        return f"{minutes:02d}:{seconds:02d}.{centis:02d}"            
+
+    def generate_playlist_json(self):
+        """Step 1: Get playlist info and save to JSON"""
+        logger.debug("Getting playlist info...")
+        playlist_info = self.resolve_tracks()
+        
+        with open(self.playlist_file, 'w', encoding='utf-8') as f:
+            json.dump(playlist_info, f, ensure_ascii=False, indent=2)
+        
+        total = len(playlist_info['tracks'])
+        logger.debug(f"Playlist saved: {total} items")
+        return playlist_info
+    
+    def get_lyrics(self, video_id):
+        try:
+            watch_data = self.yt.get_watch_playlist(video_id)
+            lyrics_id = watch_data.get("lyrics")
+            if not lyrics_id:
+                return None
+
+            # Try to get synced lyrics first
+            try:
+                synced = self.yt.get_lyrics(lyrics_id, True)
+                if (synced and synced.get("hasTimestamps") and synced.get("lyrics")):
+                    lrc_lines = []
+                    for line in synced["lyrics"]:
+                        if not line.text:
+                            continue
+                        timestamp = self.ms_to_lrc(line.start_time)
+                        lrc_lines.append(f"[{timestamp}]{line.text}")
+                    lrc_text = "\n".join(lrc_lines)
+                    logger.debug(f"Synced lyrics found ({len(synced['lyrics'])} lines)")
+                    return lrc_text
+            except Exception:
+                pass
+
+            # Fallback to normal lyrics
+            normal = self.yt.get_lyrics(lyrics_id)
+            if not normal:
+                return None
+            lyrics_text = normal.get("lyrics")
+            if not lyrics_text:
+                return None
+            logger.debug(f"Unsynced lyrics found ({len(lyrics_text.splitlines())} lines)")
+            return lyrics_text
+        except Exception as e:
+            logger.debug(f"Lyrics not available: {e}")
+            return None
+
+    def fetch_song_credits(self, video_id):
+        try:
+            credits = self.yt.get_song_credits(f"MPTC{video_id}")
+            return {
+                "performers": credits.get("performed_by", {}).get("data", []),
+                "writers": credits.get("written_by", {}).get("data", []),
+                "producers": credits.get("produced_by", {}).get("data", []),
+                "copyright": credits.get("music_metadata_provided_by", {}).get("data", [])
+            }
+        except Exception as e:
+            logger.debug("Credits not available")
+            return None
+
+    def get_song_metadata(self, song):
+        """Get all metadata for a single song"""
+        video_id = song['videoId']
+        title = song['title']
+        
+        metadata = {
+            'title': title,
+            'artist': ', '.join([a['name'] for a in song.get('artists', [])]),
+            'album': song.get('album', {}).get('name', ''),
+            'album_artist': None,
+            'track_number': None,
+            'track_total': None,
+            'year': None,
+            'cover_url': None,
+            'lyrics': None,
+            'performers': [],
+            'writers': [],
+            'producers': [],
+            'copyright': [],
+            'comment': f"https://music.youtube.com/watch?v={video_id}"
+        }
+        
+        # Get album information
+        album = song.get('album', {})
+        album_id = album.get('id')
+        if album_id:
+            try:
+                logger.debug(f"Getting album info for: {album.get('name', 'Unknown')}")
+                album_data = self.yt.get_album(album_id)
+                
+                metadata['year'] = album_data.get('year')
+                metadata['track_total'] = album_data.get('trackCount')
+                
+                album_artists = album_data.get('artists', [])
+                if album_artists:
+                    metadata['album_artist'] = ', '.join(artist['name'] for artist in album_artists)
+                
+                # Find track number
+                if album_data.get('trackCount') == 1:
+                    metadata['track_number'] = 1
+                else:
+                    album_tracks = album_data.get('tracks', [])
+                    for idx, track in enumerate(album_tracks, 1):
+                        if track.get('videoId') == video_id:
+                            metadata['track_number'] = track.get('trackNumber', idx)
+                            break
+                        if (track.get('title', '').strip().lower() == title.strip().lower()):
+                            metadata['track_number'] = track.get('trackNumber', idx)
+                            break
+                
+                # Cover art with best resolution
+                thumbnails = album_data.get('thumbnails', [])
+                if thumbnails:
+                    base_url = thumbnails[0]["url"]
+                    metadata['cover_url'] = force_best_cdn_cover(
+                        base_url,
+                        size=self.config["cover_size"],
+                        quality=self.config["cover_quality"]
+                    )
+                
+                time.sleep(0.3)
+                
+            except Exception as e:
+                logger.warning(f"Could not get album info: {e}")
+        
+        # Get song credits
+        try:
+            logger.debug(f"Getting credits for: {title}")
+            credits = self.fetch_song_credits(video_id)
+            if credits:
+                metadata["performers"] = credits.get("performers", [])
+                metadata["writers"] = credits.get("writers", [])
+                metadata["producers"] = credits.get("producers", [])
+                metadata["copyright"] = credits.get("copyright", [])
+            time.sleep(0.3)
+        except Exception as e:
+            logger.warning(f"Could not get credits: {e}")
+        
+        # Get lyrics
+        try:
+            lyrics = self.get_lyrics(video_id)
+            if lyrics:
+                metadata["lyrics"] = lyrics
+        except Exception as e:
+            logger.debug(f"Could not get lyrics: {e}")
+        
+        logger.debug(
+            f"{title} | "
+            f"Album={metadata['album']} | "
+            f"Track={metadata['track_number']}/"
+            f"{metadata['track_total']}"
+        )
+        
+        return metadata
+    
+    def download_song_with_metadata(self, song, metadata):
+        """Download a single song with its metadata already fetched"""
+        video_id = song['videoId']
+        video_type = song.get('videoType', 'UNKNOWN')
+
+        if video_type != 'MUSIC_VIDEO_TYPE_ATV':
+            logger.warning(f"{song['title']} skipped (not an official song)")
+            return False
+
+        temp_file = self.temp_dir / video_id
+
+        album_artist = metadata.get("album_artist") or "Unknown Artist"
+        album = metadata.get("album") or "Unknown Album"
+        track_number = metadata.get("track_number") or 1
+        title = metadata.get("title") or "Unknown Title"
+
+        def safe(s):
+            s = str(s).strip()
+
+            # Replace forbidden characters (Windows-safe = universal-safe)
+            s = re.sub(r'[\\/:*?"<>|;]', "_", s)
+
+            # Remove control characters (0x00-0x1F, 0x7F)
+            s = re.sub(r'[\x00-\x1f\x7f]', '', s)
+
+            # Remove trailing dots and spaces (Windows issue)
+            s = re.sub(r'[. ]+$', '', s)
+
+            # Collapse multiple spaces
+            s = re.sub(r'\s+', ' ', s).strip()
+
+            # Prevent empty name
+            if not s:
+                return "Unknown"
+
+            # Prevent reserved Windows names (case-insensitive)
+            reserved = {'con', 'prn', 'aux', 'nul',
+                        'com1', 'com2', 'com3', 'com4', 'com5', 'com6', 'com7', 'com8', 'com9',
+                        'lpt1', 'lpt2', 'lpt3', 'lpt4', 'lpt5', 'lpt6', 'lpt7', 'lpt8', 'lpt9'}
+            if s.lower().split('.')[0] in reserved:
+                s = '_' + s
+
+            # Truncate to 200 for maximum safety
+            truncate = 200
+
+            if truncate is not None:
+                s = s[:truncate]
+
+            return s
+
+        album_artist = safe(album_artist)
+        album = safe(album)
+        title = safe(title)
+
+        track_str = f"{int(track_number):02d}"
+
+        artist_dir = find_existing_folder(self.output_dir, album_artist)        
+        artist_dir.mkdir(exist_ok=True)
+
+        album_dir = find_existing_folder(artist_dir, album)
+        album_dir.mkdir(exist_ok=True)
+
+        final_dir = album_dir
+
+        if self.audio_codec == "opus":
+            extension = "opus"
+        else:
+            extension = "m4a"
+
+        final_file = final_dir / f"{track_str} - {title}.{extension}"
+
+        if final_file.exists():
+            if self.config.get("skip_existing"):
+                logger.debug(f"{final_file.name} already exists, skipping")
+                return "skipped"
+            final_file.unlink()
+        
+        cover_path = None
+
+        try:
+            logger.debug(f"Downloading: {metadata['artist']} - {metadata['title']}")
+
+            cmd_download = ['yt-dlp']
+            
+            if self.config.get("use_aria2c"):
+                cmd_download += ["--downloader", "aria2c"]
+
+            if self.config.get("cookies_path"):
+                cmd_download += ["--cookies", self.config["cookies_path"]]
+
+            if self.config.get("po_token"):
+                cmd_download += [
+                    "--extractor-args",
+                    f"youtube:po_token=web_music.gvs+{self.config['po_token']}"
+                ]
+
+            cmd_download += [
+                "--fixup", "never",
+                "-f", str(self.config["audio_itag"]),
+                "-o", str(temp_file),
+                "--remote-components", "ejs:npm",
+                f"https://music.youtube.com/watch?v={video_id}"
+            ]
+
+            subprocess.run(cmd_download, check=True, capture_output=True, text=True)
+
+            if not temp_file.exists():
+                raise FileNotFoundError(f"File not downloaded for {video_id}")
+
+            logger.debug(f"Downloaded ({temp_file.stat().st_size / 1024:.1f} KB)")
+            
+            # Remux file keeping original extension
+            if self.audio_codec == "opus":
+                cmd_remux = [
+                    "ffmpeg",
+                    "-loglevel", "error",
+                    "-y",
+                    "-i", str(temp_file),
+                    "-c:a", "copy",
+                    str(final_file)
+                ]
+            else:
+                cmd_remux = [
+                    "ffmpeg",
+                    "-loglevel", "error",
+                    "-y",
+                    "-i", str(temp_file),
+                    "-c:a", "copy",
+                    "-movflags", "+faststart",
+                    str(final_file)
+                ]
+                
+            subprocess.run(cmd_remux, check=True, capture_output=True, text=True)
+            temp_file.unlink()                            
+
+            if self.config.get("embed_cover") and metadata.get("cover_url"):
+                try:
+                    cover_path = self.temp_dir / f"{video_id}_cover.jpg"
+                    if self.config.get("use_aria2c"):
+                        subprocess.run(
+                            [
+                                "aria2c",
+                                "-x", "4",
+                                "-k", "1M",
+                                "-o", cover_path.name,
+                                "-d", str(cover_path.parent),
+                                metadata['cover_url']
+                            ],
+                            check=True,
+                            capture_output=True,
+                            text=True
+                        )
+                    else:
+                        urllib.request.urlretrieve(metadata['cover_url'], str(cover_path))
+                except Exception as e:
+                    logger.warning(f"Could not download cover: {e}")
+                    cover_path = None
+
+            if self.apply_metadata_and_cover(final_file, metadata, cover_path):
+                logger.debug("Metadata + cover written")
+            
+            # Save cover file
+            if self.config.get("save_cover") and cover_path and cover_path.exists():
+                album_cover = final_dir / "cover.jpg"
+                if not album_cover.exists():
+                    shutil.copy(cover_path, album_cover)
+                    logger.debug("Cover saved")
+
+            if cover_path and cover_path.exists():
+                cover_path.unlink()
+
+            return True
+
+        except subprocess.CalledProcessError as e:
+            logger.error(f"yt-dlp/ffmpeg failed for {song['title']}: {e}")
+            if temp_file.exists():
+                temp_file.unlink()
+            return False
+        except FileNotFoundError as e:
+            logger.error(f"Missing file for {song['title']}: {e}")
+            if temp_file.exists():
+                temp_file.unlink()
+            return False
+        except Exception as e:
+            logger.error(f"Unexpected error for {song['title']}: {e}")
+            if temp_file.exists():
+                temp_file.unlink()
+            return False
+
+    def process_playlist(self):
+        """Step 2: Process each song in the playlist sequentially"""
+        logger.debug("STEP 2: Processing playlist (official songs only)")
+        
+        with open(self.playlist_file, 'r', encoding='utf-8') as f:
+            playlist = json.load(f)
+        
+        tracks = playlist.get('tracks', [])
+        official_count = sum(1 for t in tracks if t.get('videoType') == 'MUSIC_VIDEO_TYPE_ATV')
+        non_official = len(tracks) - official_count
+            
+        logger.info(f"Playlist: {len(tracks)} tracks ({official_count} official, {non_official} non-music)")
+        logger.info(f"Downloading {len(tracks)} tracks...")
+        
+        successful = 0
+        failed = 0
+        skipped = 0
+        
+        for idx, track in enumerate(tracks, 1):
+            if track.get('videoType') != 'MUSIC_VIDEO_TYPE_ATV':
+                logger.warning(f"[{idx}/{len(tracks)}] {track['title']} skipped (not an official song)")
+                skipped += 1
+                continue
+            
+            # Get metadata for this specific song
+            metadata = self.get_song_metadata(track)
+            
+            # Download and process with metadata
+            result = self.download_song_with_metadata(track, metadata)
+            
+            if result == "skipped":
+                skipped += 1  
+                artist = metadata.get('artist', 'Unknown')
+                logger.info(f"[{idx}/{len(tracks)}] {artist} - {track['title']} (already exists)")
+            elif result == True:     
+                successful += 1                
+                artist = metadata.get('artist', 'Unknown')
+                logger.info(f"[{idx}/{len(tracks)}] {artist} - {track['title']}")
+            else:
+                failed += 1
+                logger.error(f"[{idx}/{len(tracks)}] Failed: {track['title']}")
+
+            time.sleep(self.config["delay_between_downloads"])
+        
+        if self.config.get("replaygain"):
+            logger.debug("Calculating ReplayGain...")
+            album_count = 0
+            for artist_dir in self.output_dir.iterdir():
+                if not artist_dir.is_dir():
+                    continue
+                for album_dir in artist_dir.iterdir():
+                    if not album_dir.is_dir():
+                        continue
+                    self.calculate_replaygain_album(album_dir)
+                    album_count += 1
+            logger.info(f"ReplayGain calculated for {album_count} albums") 
+        
+        logger.info(f"Done: {successful} downloaded, {failed} failed, {skipped} skipped")             
+    
+    def run(self, cleanup=True):
+        """Main execution with new per-song pipeline flow"""
+        logger.debug("Verifying dependencies...")
+        try:
+            subprocess.run(['ffmpeg', '-version'], capture_output=True, check=True)
+            subprocess.run(['yt-dlp', '--version'], capture_output=True, check=True)
+            subprocess.run(['deno', '--version'], capture_output=True, check=True)
+            logger.debug("ffmpeg, yt-dlp and deno found")
+        except:
+            logger.critical("Please install ffmpeg, yt-dlp and deno first")
+            return
+        
+        logger.debug("Starting download process")
+        
+        try:
+            self.prepare_temp_dir()
+            
+            # Step 1: Get playlist JSON
+            self.generate_playlist_json()
+            
+            # Step 2: Process each song one by one
+            self.process_playlist()
+            
+        finally:
+            if cleanup:
+                self.cleanup_temp_dir()
