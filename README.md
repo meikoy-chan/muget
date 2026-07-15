@@ -9,6 +9,7 @@ Before using MuGet, make sure the following tools are installed and available in
 * [Python](https://www.python.org)
 * [FFmpeg](https://www.ffmpeg.org)
 * [Deno](https://deno.com)
+* [Git](https://git-scm.com)
 
 ## Installation
 
@@ -116,10 +117,10 @@ Specify a custom `output directory`:
 "output_directory": "/home/user/Music"
 ```
 
-Download AAC instead of Opus:
+Download format Ogg/Opus:
 
 ```json
-"audio_itag": "140"
+"audio_itag": "`251`"
 ```
 
 Use browser cookies for authenticated downloads:

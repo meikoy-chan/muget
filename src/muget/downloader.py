@@ -631,7 +631,7 @@ class YouTubeMusicDownloader:
             
             # Save cover file
             if self.config.get("save_cover") and cover_path and cover_path.exists():
-                album_cover = final_dir / "cover.jpg"
+                album_cover = final_dir / "Cover.jpg"
                 if not album_cover.exists():
                     shutil.copy(cover_path, album_cover)
                     logger.debug("Cover saved")

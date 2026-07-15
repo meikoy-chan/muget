@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "muget"
-version = "0.0.1"
-description = "YouTube Music downloader"
+version = "0.0.2"
+description = "YouTube Music downloader with tags embed"
 readme = "README.md"
 requires-python = ">=3.10"
 
@@ -17,10 +17,11 @@ license = "MIT"
 license-files = ["LICENSE"]
 
 keywords = [
-  "youtube-music",
+  "ytmusicapi",
   "music",
-  "playlist",
-  "downloader"
+  "yt-dlp",
+  "music-downloader",
+  "dowloader"
 ]
 
 dependencies = [
