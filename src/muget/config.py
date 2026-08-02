@@ -47,13 +47,9 @@ def load_config():
             config[key] = value
             updated = True
 
-    # NORMALIZACIÓN CORRECTA AQUÍ
     config["cookies_path"] = config.get("cookies_path") or None
     config["po_token"] = config.get("po_token") or None
-    config["replaygain"] = config.get(
-        "replaygain",
-        False
-    )
+    config["replaygain"] = config.get("replaygain", False)
 
     if updated:
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:

@@ -718,16 +718,33 @@ class YouTubeMusicDownloader:
     
     def run(self, cleanup=True):
         """Main execution with new per-song pipeline flow"""
-        logger.debug("Verifying dependencies...")
+        logger.debug("Verifying critical dependencies...")
+
+        deno_ok = True
+        ffmpeg_ok = True
+
         try:
-            subprocess.run(['ffmpeg', '-version'], capture_output=True, check=True)
-            subprocess.run(['yt-dlp', '--version'], capture_output=True, check=True)
-            subprocess.run(['deno', '--version'], capture_output=True, check=True)
-            logger.debug("ffmpeg, yt-dlp and deno found")
-        except:
-            logger.critical("Please install ffmpeg, yt-dlp and deno first")
+            subprocess.run(["deno", "--version"], capture_output=True, check=True)
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            deno_ok = False
+
+        try:
+            subprocess.run(["ffmpeg", "-version"], capture_output=True, check=True)
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            ffmpeg_ok = False
+
+        if not deno_ok and not ffmpeg_ok:
+            logger.warning("Deno and FFmpeg are not available. Please make sure they are accessible from the terminal.")
             return
-        
+
+        if not deno_ok:
+            logger.warning("Deno not available. Please make sure it is accessible from the terminal.")
+            return
+
+        if not ffmpeg_ok:
+            logger.warning("FFmpeg not available. Please make sure it is accessible from the terminal.")
+            return
+
         logger.debug("Starting download process")
         
         try:

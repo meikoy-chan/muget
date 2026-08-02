@@ -28,8 +28,14 @@ def write_default_config_file(config_path: Path) -> None:
     )
 
 
-@click.command()
-@click.help_option("-h", "--help")
+# Custom context settings for better help display
+CONTEXT_SETTINGS = dict(
+    help_option_names=["-h", "--help"],
+    max_content_width=100,
+)
+
+
+@click.command(context_settings=CONTEXT_SETTINGS)
 @click.version_option(
     __version__,
     "-v",
@@ -49,20 +55,23 @@ def write_default_config_file(config_path: Path) -> None:
     "--audio-itag",
     type=str,
     default=DEFAULT_CONFIG["audio_itag"],
-    help="Audio quality itag (e.g., 140 for AAC, 251 for Opus)",
+    metavar="ITAG",
+    help="Audio quality itag",
 )
 @click.option(
-    "--output-dir",
     "-o",
+    "--output-dir",
     type=Path,
-    default=Path(DEFAULT_CONFIG["output_directory"]),  # ← CORREGIDO
-    help="Directory where downloaded music will be saved",
+    default=Path(DEFAULT_CONFIG["output_directory"]),
+    metavar="DIR",
+    help="Output directory for downloaded music",
 )
 @click.option(
     "--delay",
     type=float,
     default=DEFAULT_CONFIG["delay_between_downloads"],
-    help="Delay in seconds between downloads to avoid rate limiting",
+    metavar="SECS",
+    help="Delay between downloads to avoid rate limiting",
 )
 # Cover art options
 @click.option(
@@ -74,47 +83,51 @@ def write_default_config_file(config_path: Path) -> None:
     "--cover-size",
     type=int,
     default=DEFAULT_CONFIG["cover_size"],
+    metavar="PX",
     help="Cover art resolution in pixels",
 )
 @click.option(
     "--cover-quality",
     type=int,
     default=DEFAULT_CONFIG["cover_quality"],
+    metavar="1-100",
     help="Cover art JPEG quality (1-100)",
 )
 @click.option(
     "--save-cover/--no-save-cover",
     default=DEFAULT_CONFIG["save_cover"],
-    help="Save cover.jpg as a separate file in the album folder",
+    help="Save cover.jpg as separate file in album folder",
 )
 # Download behavior options
 @click.option(
     "--skip-existing/--no-skip-existing",
     default=DEFAULT_CONFIG["skip_existing"],
-    help="Skip downloading files that already exist",
+    help="Skip files that already exist",
 )
 @click.option(
     "--replaygain/--no-replaygain",
     default=DEFAULT_CONFIG["replaygain"],
-    help="Calculate and apply ReplayGain to albums (requires rsgain)",
+    help="Apply ReplayGain to albums (requires rsgain)",
 )
 @click.option(
     "--use-aria2c/--no-use-aria2c",
     default=DEFAULT_CONFIG["use_aria2c"],
-    help="Use aria2c as the external downloader for faster downloads",
+    help="Use aria2c for faster downloads",
 )
 # Authentication options
 @click.option(
     "--cookies",
     type=Path,
     default=Path(DEFAULT_CONFIG["cookies_path"]) if DEFAULT_CONFIG["cookies_path"] else None,
-    help="Path to Netscape format cookies file for YouTube Music Premium formants",
+    metavar="FILE",
+    help="Netscape cookies file for YTM Premium formats",
 )
 @click.option(
     "--po-token",
     type=str,
     default=DEFAULT_CONFIG["po_token"],
-    help="PoToken for YouTube Music Premium formats",
+    metavar="TOKEN",
+    help="PoToken for YTM Premium formats",
 )
 # Logging options
 @click.option(
@@ -122,21 +135,22 @@ def write_default_config_file(config_path: Path) -> None:
     "--log-level",
     type=click.Choice(["DEBUG", "INFO"]),
     default=DEFAULT_CONFIG["log_level"],
-    help="Set the logging verbosity level",
+    help="Logging verbosity level",
 )
 # CLI configuration options
 @click.option(
     "--config-path",
     type=Path,
     default=Path.home() / "muget.json",
-    help="Path to the configuration file",
+    metavar="FILE",
+    help="Path to configuration file",
 )
 @click.option(
     "-n",
     "--no-config-file",
     is_flag=True,
     default=False,
-    help="Use default configuration from config.py (ignores all other flags)",
+    help="Ignore config file, use built-in defaults",
 )
 def main(
     playlists: tuple[str, ...],
@@ -157,13 +171,28 @@ def main(
     no_config_file: bool,
 ) -> None:
     """
-    MuGet - YouTube Music Downloader.
-    
-    Downloads music from YouTube Music playlists, albums, or individual songs
-    with metadata, cover art, and optional ReplayGain support.
-    
-    Configuration is loaded from muget.json when no flags are passed.
-    Use -n to force default configuration from config.py.
+    MuGet — YouTube Music Downloader.
+
+    Downloads music from YouTube Music: songs, albums, and public playlists.
+    Includes metadata, cover art, and optional ReplayGain support.
+
+    \b
+    CONFIGURATION:
+      By default, settings are loaded from muget.json.
+      Use -n to ignore the config file and use built-in defaults.
+      Use --config-path to specify a different config file location.
+
+    \b
+    AUTHENTICATION (Premium):
+      To download premium formats (itags 141, 774), provide:
+        --cookies FILE    Netscape-format cookies file
+        --po-token TOKEN  PoToken value
+
+    \b
+    EXAMPLES:
+      muget "https://music.youtube.com/watch?v=..."
+      muget -o ~/Music --audio-itag 251 "URL"
+      muget --cookies cookies.txt --audio-itag 774 "URL"
     """
     
     colorama.just_fix_windows_console()
@@ -187,7 +216,7 @@ def main(
         po_token = DEFAULT_CONFIG["po_token"] or None
         
     else:
-        # Create file confiuration
+        # Create config file if it doesn't exist
         if not config_path.exists():
             write_default_config_file(config_path)
             click.echo(f"Configuration file created: {config_path}")
@@ -195,7 +224,7 @@ def main(
             click.echo("After editing it, run MuGet again.")
             raise SystemExit(0)
         
-        # Detec Flags
+        # Detect if any CLI flags were passed
         ctx = click.get_current_context()
         any_cli_flag = False
         
@@ -210,7 +239,7 @@ def main(
                 any_cli_flag = True
                 break
         
-        # No flags, using config file
+        # No flags passed, load from config file
         if not any_cli_flag:
             config_file = json.loads(config_path.read_text())
             

@@ -44,23 +44,14 @@ def resolve_input(url):
     )
 
 
-def force_best_cdn_cover(url: str, size: int, quality: int) -> str:
+def force_best_cdn_cover(url: str, size: int, quality: int) -> str:    
     
-    #Fuerza request al CDN.
-    #Si no existe ese tamaño, YouTube devuelve el mayor disponible
-
     base = url.split('=')[0]
     base = re.sub(r'=(w|h|s)\d+.*$', '', base)
-
     return f"{base}=w{size}-l{quality}-rj"
 
 
 def normalize_folder_name(name: str) -> str:
-    """
-    Normaliza texto para comparaciones:
-    - Unicode consistente
-    - Ignora mayúsculas/minúsculas
-    """
 
     return unicodedata.normalize(
         "NFKC",
@@ -69,16 +60,6 @@ def normalize_folder_name(name: str) -> str:
 
 
 def find_existing_folder(parent: Path, folder_name: str) -> Path:
-    """
-    Busca una carpeta existente ignorando
-    mayúsculas/minúsculas y diferencias Unicode.
-
-    Si existe:
-        devuelve la carpeta real.
-
-    Si no existe:
-        devuelve la ruta donde debería crearse.
-    """
 
     normalized_target = normalize_folder_name(folder_name)
 

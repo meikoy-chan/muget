@@ -6,10 +6,10 @@ Download YouTube Music audio with metadata.
 
 Before using MuGet, make sure the following tools are installed and available in your PATH:
 
-* [Python](https://www.python.org)
-* [FFmpeg](https://www.ffmpeg.org)
-* [Deno](https://deno.com)
-* [Git](https://git-scm.com)
+- [Python](https://www.python.org)
+- [FFmpeg](https://www.ffmpeg.org)
+- [Deno](https://deno.com)
+- [Git](https://git-scm.com)
 
 ## Installation
 
@@ -23,18 +23,19 @@ pip install git+https://github.com/meikoy-chan/muget.git
 
 The first time MuGet runs, it automatically creates a configuration file:
 
-• Linux: 
-```bash
-~/muget.json
-```
-• Windows: 
-```bash
-C:\Users\<username>\muget.json
-```
+- **Linux:**
+  ```bash
+  ~/muget.json
+  ```
+- **Windows:**
+  ```bash
+  C:\Users\<username>\muget.json
+  ```
 
 **Default configuration:**
 
 ```json
+{
     "audio_itag": "140",
     "output_directory": "YouTube Music",
     "delay_between_downloads": 1,
@@ -48,10 +49,12 @@ C:\Users\<username>\muget.json
     "replaygain": false,
     "use_aria2c": false,
     "log_level": "INFO"
+}
 ```
+
 > **Tip:** Edit this file to customize MuGet's behavior.
 
-* **Configuration Options:**
+### Configuration Options
 
 ```text
 Usage: muget [OPTIONS] URL [URL...]
@@ -86,7 +89,7 @@ Options:
   --use-aria2c / --no-use-aria2c  Use aria2c as the external downloader for
                                   faster downloads
   --cookies PATH                  Path to Netscape format cookies file for
-                                  YouTube Music Premium formants
+                                  YouTube Music Premium formats
   --po-token TEXT                 PoToken for YouTube Music Premium formats
   -l, --log-level [DEBUG|INFO]    Set the logging verbosity level
   --config-path PATH              Path to the configuration file
@@ -94,36 +97,43 @@ Options:
                                   line arguments
 ```
 
-* **Available Audio Formats:**
+### Available Audio Formats
 
 Available values for `audio_itag`:
 
-|Itag|Quality|Codec|Container|Account|
-|-|-|-|-|-|
-|`249`|`48kbps`|`opus`|`ogg`|`free`|
-|`250`|`64kbps`|`opus`|`ogg`|`free`|
-|`251`|`128kbps`|`opus`|`ogg`|`free`|
-|`774`|`256kbps`|`opus`|`ogg`|`premium`|
-|`139`|`48kbps`|`aac`|`m4a`|`free`|
-|`140`|`128kbps`|`aac`|`m4a`|`free`|
-|`141`|`256kbps`|`aac`|`m4a`|`premium`|
-> **Tip:** To download using the `774` or `141` itags, you must have an active YouTube Music Premium subscription and provide `Cookies_File`.
+| Itag | Quality  | Codec | Container | Account  |
+|------|----------|-------|-----------|----------|
+| `249`| 48kbps   | opus  | ogg       | free     |
+| `250`| 64kbps   | opus  | ogg       | free     |
+| `251`| 128kbps  | opus  | ogg       | free     |
+| `774`| 256kbps  | opus  | ogg       | premium  |
+| `139`| 48kbps   | aac   | m4a       | free     |
+| `140`| 128kbps  | aac   | m4a       | free     |
+| `141`| 256kbps  | aac   | m4a       | premium  |
 
-## **Examples:**
+> **Tip:** To download using the `774` or `141` itags, you must have an active YouTube Music Premium subscription and provide a valid `cookies_path`.
 
-Specify a custom `output directory`:
+### Configuration Examples
+
+**Specify a custom output directory:**
 
 ```json
 "output_directory": "/home/user/Music"
 ```
 
-Download format Ogg/Opus:
+**Download songs in Opus 128kbps (free):**
 
 ```json
-"audio_itag": "`251`"
+"audio_itag": "251"
 ```
 
-Use browser cookies for authenticated downloads:
+**Download songs in Opus 256kbps (premium):**
+
+```json
+"audio_itag": "774"
+```
+
+**Use browser cookies for authenticated downloads:**
 
 ```json
 "cookies_path": "/home/user/cookies.txt"
@@ -134,32 +144,37 @@ Use browser cookies for authenticated downloads:
 Run MuGet with the following command:
 
 ```bash
-muget "YOUR_URL"
+muget "URL"
 ```
 
-• Supported URL types:
+**Supported URL types:**
 
-* `Song`
-* `Album`
-* `Public playlist`
+- Song
+- Album
+- Public playlist
 
->**Tip.** **Songs that are not "Official" (regular YouTube videos) are excluded by this program.** To ensure you get valid links, use YouTube Music to search and enable the filter for songs or albums.
+> **Tip:** Songs that are not "Official" (regular YouTube videos) are excluded by this program. To ensure you get valid links, use YouTube Music to search and enable the filter for songs or albums.
 
-* **Examples:**
+### Usage Examples
 
-* **Download a song:**
-  ```bash
-    muget https://music.youtube.com/watch?v=EfjIqEGHmDI
-  ```
-* **Download an album:**
-  ```bash
-    muget https://music.youtube.com/playlist?list=OLAK5uy_keZv-_VVAJ8GQ3gEx9c3a3araWrT0En0Y
-  ```
-* **Download a public playlist:**
-  ```bash
-    muget https://music.youtube.com/playlist?list=RDCLAK5uy_mzE-hKfgQBgAY_ZN4O85nOo_H9U0P47Mc
-  ```
-  
+**Download a song:**
+
+```bash
+muget "https://music.youtube.com/watch?v=EfjIqEGHmDI"
+```
+
+**Download an album:**
+
+```bash
+muget "https://music.youtube.com/playlist?list=OLAK5uy_keZv-_VVAJ8GQ3gEx9c3a3araWrT0En0Y"
+```
+
+**Download a public playlist:**
+
+```bash
+muget "https://music.youtube.com/playlist?list=RDCLAK5uy_mzE-hKfgQBgAY_ZN4O85nOo_H9U0P47Mc"
+```
+
 ## Output
 
 Downloaded files are organized automatically:
@@ -177,18 +192,17 @@ output_directory/
 
 MuGet automatically writes:
 
-* `title`
-* `artist`
-* `album`
-* `albumartist`
-* `track`
-* `totaltracks`
-* `date`
-* `cover art`
-* `lyrics (when available)`
-* `credits (when available)`
+- `title`
+- `artist`
+- `album`
+- `albumartist`
+- `track`
+- `totaltracks`
+- `date`
+- `cover art`
+- `lyrics` (when available)
+- `credits` (when available)
 
 ## Acknowledgements
 
 This project is based on [gytmdl](https://github.com/glomatico/gytmdl) and built on top of [ytmusicapi](https://github.com/sigma67/ytmusicapi). Thanks to the maintainers and contributors of both projects.
-
