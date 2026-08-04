@@ -4,29 +4,29 @@ Download music from YouTube Music.
 
 ## Features:
 
-* MuGet automatically embed metadata into audio file:
+  * MuGet automatically embed metadata into audio file:
 
-  - `title`
-  - `artist`
-  - `album`
-  - `albumartist`
-  - `track`
-  - `totaltracks`
-  - `date`
-  - `cover art`
-  - `lyrics` (when available)
-  - `credits` (when available)
+    - `title`
+    - `artist`
+    - `album`
+    - `albumartist`
+    - `track`
+    - `totaltracks`
+    - `date`
+    - `cover art`
+    - `lyrics` (when available)
+    - `credits` (when available)
 
-* Downloaded files are organized automatically:
+  * Downloaded files are organized automatically:
 
-```text
-output_directory/
-└── Album Artist/
-    └── Album/
-        ├── 01 - Song.opus
-        ├── 02 - Song.opus
-        └── 03 - Song.opus
-```
+    ```text
+    output_directory/
+    └── Album Artist/
+        └── Album/
+            ├── 01 - Song.opus
+            ├── 02 - Song.opus
+            └── 03 - Song.opus
+    ```
 
 ## Requirements
 
