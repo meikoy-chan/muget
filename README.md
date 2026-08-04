@@ -17,7 +17,7 @@ Download music from YouTube Music.
     - `lyrics` (when available)
     - `credits` (when available)
     
-      ### Example:
+      ### *Example:
 
         ```text
         Input #0, ogg, from '05 - Uma Thurman.opus':
@@ -144,7 +144,7 @@ Download music from YouTube Music.
         "embed_cover": true,
         "cover_size": 1400,
         "cover_quality": 90,
-        "save_cover": false,
+        "save_cover": true,
         "skip_existing": true,
         "cookies_path": null,
         "po_token": null,
