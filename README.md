@@ -18,7 +18,7 @@ Download music from YouTube Music.
     - `credits` (when available)
     
       ### Example:
-      
+
         ```text
         Input #0, ogg, from '05 - Uma Thurman.opus':
         Duration: 00:03:31.58, start: 0.000000, bitrate: 147 kb/s
@@ -84,7 +84,6 @@ Download music from YouTube Music.
                             : [03:01.44]I can work a miracle, work a miracle
                             : [03:04.85]Oh, oh, I keep you like an oath
                             : [03:07.92]May nothing but death do us part
-            organization    : MuGet v4.0.3
             performer       : Fall Out Boy
             composer        : Jake Sinclair; Andy Hurley; Pete Wentz; Joe Trohman; Waqaas Hashmi; Jarrel Young; Liam O'Donnell; Bob Mosher; Patrick Stump; Jack Marshall
             producer        : Jake Sinclair
