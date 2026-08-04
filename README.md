@@ -18,9 +18,9 @@ Download music from YouTube Music.
     - `credits` (when available)
     
       ### * Example:
+        ```html
+        <details>
         
-        </details>
-        ```text
         Input #0, ogg, from '05 - Uma Thurman.opus':
         Duration: 00:03:31.58, start: 0.000000, bitrate: 147 kb/s
         Stream #0:0: Audio: opus, 48000 Hz, stereo, fltp
@@ -92,9 +92,9 @@ Download music from YouTube Music.
         Stream #0:1: Video: mjpeg (Baseline), yuvj420p(pc, bt470bg/unknown/unknown), 1400x1400 [SAR 1:1 DAR 1:1], 90k tbr, 90k tbn (attached pic)
             Metadata:
               comment         : Cover (front)
-        ```
+        
         </details>
-
+        ```
 
   * Downloaded files are organized automatically:
 
