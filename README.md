@@ -106,7 +106,7 @@ Download music from YouTube Music.
 
 ## Prequirements:
 
-  * Before using MuGet, make sure the following tools are installed and available in your PATH:
+  * Before proceeding with the installation, make sure the following tools are installed and available in your PATH:
 
     - [Python](https://www.python.org)
     - [FFmpeg](https://www.ffmpeg.org)
