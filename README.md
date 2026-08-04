@@ -2,6 +2,34 @@
 
 Download YouTube Music audio with metadata.
 
+## Metadata
+
+MuGet automatically writes:
+
+- `title`
+- `artist`
+- `album`
+- `albumartist`
+- `track`
+- `totaltracks`
+- `date`
+- `cover art`
+- `lyrics` (when available)
+- `credits` (when available)
+
+## Output
+
+Downloaded files are organized automatically:
+
+```text
+output_directory/
+└── Album Artist/
+    └── Album/
+        ├── 01 - Song.opus
+        ├── 02 - Song.opus
+        └── 03 - Song.opus
+```
+
 ## Requirements
 
 Before using MuGet, make sure the following tools are installed and available in your PATH:
@@ -178,34 +206,6 @@ muget "https://music.youtube.com/playlist?list=OLAK5uy_keZv-_VVAJ8GQ3gEx9c3a3ara
 ```bash
 muget "https://music.youtube.com/playlist?list=RDCLAK5uy_mzE-hKfgQBgAY_ZN4O85nOo_H9U0P47Mc"
 ```
-
-## Output
-
-Downloaded files are organized automatically:
-
-```text
-output_directory/
-└── Album Artist/
-    └── Album/
-        ├── 01 - Song.opus
-        ├── 02 - Song.opus
-        └── 03 - Song.opus
-```
-
-## Metadata
-
-MuGet automatically writes:
-
-- `title`
-- `artist`
-- `album`
-- `albumartist`
-- `track`
-- `totaltracks`
-- `date`
-- `cover art`
-- `lyrics` (when available)
-- `credits` (when available)
 
 ## Acknowledgements
 
