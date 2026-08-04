@@ -21,6 +21,7 @@ Download music from YouTube Music.
         ```html
         <details>
         <summary>Da click para ver la info.</summary>  
+          
           ```text
           Input #0, ogg, from '05 - Uma Thurman.opus':
           Duration: 00:03:31.58, start: 0.000000, bitrate: 147 kb/s
@@ -94,6 +95,7 @@ Download music from YouTube Music.
               Metadata:
                 comment         : Cover (front)
           ```
+          
         </details>
         ```
 
