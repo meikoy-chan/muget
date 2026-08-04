@@ -41,9 +41,9 @@ Before using MuGet, make sure the following tools are installed and available in
 
 In your terminal type:
 
-```bash
-pip install git+https://github.com/meikoy-chan/muget.git
-```
+  ```bash
+  pip install git+https://github.com/meikoy-chan/muget.git
+  ```
 
 ## Configuration
 
