@@ -102,6 +102,7 @@ Download music from YouTube Music.
             ├── 01 - Song.opus
             ├── 02 - Song.opus
             └── 03 - Song.opus
+            └── Cover.jpg
     ```
 
 ## Prequirements:
