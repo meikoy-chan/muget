@@ -291,9 +291,7 @@ class YouTubeMusicDownloader:
         raise ValueError(f"Unsupported input type: {self.input_type}")
 
     def apply_metadata_and_cover(self, audio_file, metadata, cover_file=None):
-        """
-        Unified method that uses the global ffmpeg function.
-        """
+        #Unified method that uses the global ffmpeg function.
         return apply_metadata_ffmpeg(audio_file, metadata, cover_file)
 
     def calculate_replaygain_album(self, album_dir):
@@ -584,9 +582,10 @@ class YouTubeMusicDownloader:
                 cmd_remux = [
                     "ffmpeg",
                     "-loglevel", "error",
-                    "-y",
+                    "-y",                    
                     "-i", str(temp_file),
                     "-c:a", "copy",
+                    "-metadata:s:a:0", "language=",
                     str(final_file)
                 ]
             else:

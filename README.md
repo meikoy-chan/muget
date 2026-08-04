@@ -57,61 +57,65 @@ The first time MuGet runs, it automatically creates a configuration file:
 ### Configuration Options
 
 ```text
-Usage: muget [OPTIONS] URL [URL...]
+Usage: muget [OPTIONS] [URL...]
 
-  MuGet - YouTube Music Playlist Downloader.
+  MuGet — YouTube Music Downloader.
 
-  Downloads music from YouTube Music playlists, albums, or individual songs
-  with metadata, cover art, and optional ReplayGain support.
+  Downloads music from YouTube Music: songs, albums, and public playlists. Includes metadata,
+  cover art, and optional ReplayGain support.
 
-  Configuration is loaded from muget.json when no flags are passed. Any flag
-  passed will use its default value instead of the config file.
+  CONFIGURATION:
+    By default, settings are loaded from muget.json.
+    Use -n to ignore the config file and use built-in defaults.
+    Use --config-path to specify a different config file location.
+
+  AUTHENTICATION (Premium):
+    To download premium formats (itags 141, 774), provide:
+      --cookies FILE    Netscape-format cookies file
+      --po-token TOKEN  PoToken value
+
+  EXAMPLES:
+    muget "https://music.youtube.com/watch?v=..."
+    muget -o ~/Music --audio-itag 251 "URL"
+    muget --cookies cookies.txt --audio-itag 774 "URL"
 
 Options:
-  -h, --help                      Show this message and exit.
   -v, --version                   Show the version and exit.
-  --audio-itag TEXT               Audio quality itag (e.g., 140 for AAC, 251
-                                  for Opus)
-  -o, --output-dir PATH           Directory where downloaded music will be
-                                  saved
-  --delay FLOAT                   Delay in seconds between downloads to avoid
-                                  rate limiting
+  --audio-itag ITAG               Audio quality itag
+  -o, --output-dir DIR            Output directory for downloaded music
+  --delay SECS                    Delay between downloads to avoid rate limiting
   --embed-cover / --no-embed-cover
                                   Embed cover art into audio files
-  --cover-size INTEGER            Cover art resolution in pixels
-  --cover-quality INTEGER         Cover art JPEG quality (1-100)
-  --save-cover / --no-save-cover  Save cover.jpg as a separate file in the
-                                  album folder
+  --cover-size PX                 Cover art resolution in pixels
+  --cover-quality 1-100           Cover art JPEG quality (1-100)
+  --save-cover / --no-save-cover  Save cover.jpg as separate file in album folder
   --skip-existing / --no-skip-existing
-                                  Skip downloading files that already exist
-  --replaygain / --no-replaygain  Calculate and apply ReplayGain to albums
-                                  (requires rsgain)
-  --use-aria2c / --no-use-aria2c  Use aria2c as the external downloader for
-                                  faster downloads
-  --cookies PATH                  Path to Netscape format cookies file for
-                                  YouTube Music Premium formats
-  --po-token TEXT                 PoToken for YouTube Music Premium formats
-  -l, --log-level [DEBUG|INFO]    Set the logging verbosity level
-  --config-path PATH              Path to the configuration file
-  -n, --no-config-file            Ignore the config file and use only command-
-                                  line arguments
+                                  Skip files that already exist
+  --replaygain / --no-replaygain  Apply ReplayGain to albums (requires rsgain)
+  --use-aria2c / --no-use-aria2c  Use aria2c for faster downloads
+  --cookies FILE                  Netscape cookies file for YTM Premium formats
+  --po-token TOKEN                PoToken for YTM Premium formats
+  -l, --log-level [DEBUG|INFO]    Logging verbosity level
+  --config-path FILE              Path to configuration file
+  -n, --no-config-file            Ignore config file, use built-in defaults
+  -h, --help                      Show this message and exit.
 ```
 
 ### Available Audio Formats
 
 Available values for `audio_itag`:
 
-| Itag | Quality  | Codec | Container | Account  |
-|------|----------|-------|-----------|----------|
-| `249`| 48kbps   | opus  | ogg       | free     |
-| `250`| 64kbps   | opus  | ogg       | free     |
-| `251`| 128kbps  | opus  | ogg       | free     |
-| `774`| 256kbps  | opus  | ogg       | premium  |
-| `139`| 48kbps   | aac   | m4a       | free     |
-| `140`| 128kbps  | aac   | m4a       | free     |
-| `141`| 256kbps  | aac   | m4a       | premium  |
+|Itag|Quality|Codec|Container|Account|
+|-|-|-|-|-|
+|`249`|48kbps|opus|ogg|free|
+|`250`|64kbps|opus|ogg|free|
+|`251`|128kbps|opus|ogg|free|
+|`774`|256kbps|opus|ogg|*premium*|
+|`139`|48kbps|aac|m4a|free|
+|`140`|128kbps|aac|m4a|free|
+|`141`|256kbps|aac|m4a|*premium*|
 
-> **Tip:** To download using the `774` or `141` itags, you must have an active YouTube Music Premium subscription and provide a valid `cookies_path`.
+> **Tip:** To download using the `774` or `141` itags, you must have an active YouTube Music Premium subscription and provide a valid *cookies_file*.
 
 ### Configuration Examples
 
