@@ -18,7 +18,6 @@ Download music from YouTube Music.
     - `credits` (when available)
     
       ### Example:
-        ```html
         <details>
         <summary>Da click para ver la info.</summary>  
           
@@ -95,9 +94,8 @@ Download music from YouTube Music.
               Metadata:
                 comment         : Cover (front)
           ```
-          
+
         </details>
-        ```
 
   * Downloaded files are organized automatically:
 
