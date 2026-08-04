@@ -18,7 +18,8 @@ Download music from YouTube Music.
     - `credits` (when available)
     
       ### * Example:
-
+        
+        </details>
         ```text
         Input #0, ogg, from '05 - Uma Thurman.opus':
         Duration: 00:03:31.58, start: 0.000000, bitrate: 147 kb/s
@@ -92,6 +93,8 @@ Download music from YouTube Music.
             Metadata:
               comment         : Cover (front)
         ```
+        </details>
+
 
   * Downloaded files are organized automatically:
 
