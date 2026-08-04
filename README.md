@@ -16,6 +16,82 @@ Download music from YouTube Music.
     - `cover art`
     - `lyrics` (when available)
     - `credits` (when available)
+    
+    * Example:
+        ```text
+        Input #0, ogg, from '05 - Uma Thurman.opus':
+        Duration: 00:03:31.58, start: 0.000000, bitrate: 147 kb/s
+        Stream #0:0: Audio: opus, 48000 Hz, stereo, fltp
+          Metadata:
+            encoder         : Lavf63.3.100
+            title           : Uma Thurman
+            artist          : Fall Out Boy
+            album_artist    : Fall Out Boy
+            album           : American Beauty/American Psycho
+            track           : 5
+            tracktotal      : 11
+            date            : 2015
+            comment         : https://music.youtube.com/watch?v=r1AZQKsXKTY
+            lyrics          : [00:00.08]I can move mountains
+                            : [00:02.58]I can work a miracle, work a miracle
+                            : [00:05.45]Oh, oh, keep you like an oath
+                            : [00:09.24]May nothing but death do us part
+                            : [00:13.43]♪
+                            : [00:26.59]She wants to dance like Uma Thurman
+                            : [00:29.11]Bury me till I confess
+                            : [00:31.86]She wants to dance like Uma Thurman
+                            : [00:35.37]And I can't get you out of my head
+                            : [00:38.49]The stench, the stench, of summer sex
+                            : [00:41.43]And CK eternity, oh hell yes
+                            : [00:44.89]Divide me down to the smallest I can be
+                            : [00:48.03]Put your, put your venom in me
+                            : [00:51.33]I can move mountains
+                            : [00:53.70]I can work a miracle, work a miracle
+                            : [00:56.71]Oh, oh, I keep you like an oath
+                            : [00:59.96]May nothing but death do us part
+                            : [01:04.41]♪
+                            : [01:16.93]She wants to dance like Uma Thurman
+                            : [01:20.44]Bury me till I confess
+                            : [01:23.09]She wants to dance like Uma Thurman
+                            : [01:26.50]And I can't get you out of my head
+                            : [01:29.47]The blood, the blood, the blood of the lamb
+                            : [01:32.75]It's worth two lions, but here I am
+                            : [01:35.81]And I slept in last night's clothes and tomorrow's dreams
+                            : [01:40.06]But they're not quite what they seem
+                            : [01:42.63]I can move mountains
+                            : [01:44.90]I can work a miracle, work a miracle
+                            : [01:47.91]Oh, oh, I keep you like an oath
+                            : [01:51.09]May nothing but death do us part
+                            : [01:55.66]♪
+                            : [02:08.03]You'll find your way
+                            : [02:10.62]And may death find you alive
+                            : [02:13.98]Take me down the line
+                            : [02:16.88]In Gem City we turn the tide
+                            : [02:20.64]You'll find your way
+                            : [02:23.29]And may death find you alive
+                            : [02:27.37]Take me down the line
+                            : [02:29.75]In Gem City we turn the tide
+                            : [02:33.38]She wants to dance like Uma Thurman
+                            : [02:37.05]Bury me till I confess
+                            : [02:39.62]She wants to dance like Uma Thurman
+                            : [02:43.08]And I can't get you out of my head
+                            : [02:45.95]I can move mountains
+                            : [02:48.69]I can work a miracle, work a miracle
+                            : [02:52.08]Oh, oh, I keep you like an oath
+                            : [02:54.87]May nothing but death do us part
+                            : [02:59.52]I can move mountains
+                            : [03:01.44]I can work a miracle, work a miracle
+                            : [03:04.85]Oh, oh, I keep you like an oath
+                            : [03:07.92]May nothing but death do us part
+            organization    : MuGet v4.0.3
+            performer       : Fall Out Boy
+            composer        : Jake Sinclair; Andy Hurley; Pete Wentz; Joe Trohman; Waqaas Hashmi; Jarrel Young; Liam O'Donnell; Bob Mosher; Patrick Stump; Jack Marshall
+            producer        : Jake Sinclair
+            copyright       : Island Records
+        Stream #0:1: Video: mjpeg (Baseline), yuvj420p(pc, bt470bg/unknown/unknown), 1400x1400 [SAR 1:1 DAR 1:1], 90k tbr, 90k tbn (attached pic)
+            Metadata:
+              comment         : Cover (front)
+        ```text
 
   * Downloaded files are organized automatically:
 
@@ -28,16 +104,16 @@ Download music from YouTube Music.
             └── 03 - Song.opus
     ```
 
-## Requirements
+## Prequirements:
 
-Before using MuGet, make sure the following tools are installed and available in your PATH:
+  * Before using MuGet, make sure the following tools are installed and available in your PATH:
 
-- [Python](https://www.python.org)
-- [FFmpeg](https://www.ffmpeg.org)
-- [Deno](https://deno.com)
-- [Git](https://git-scm.com)
+    - [Python](https://www.python.org)
+    - [FFmpeg](https://www.ffmpeg.org)
+    - [Deno](https://deno.com)
+    - [Git](https://git-scm.com)
 
-## Installation
+## Installation:
 
   * In your terminal type:
 
@@ -45,7 +121,7 @@ Before using MuGet, make sure the following tools are installed and available in
     pip install git+https://github.com/meikoy-chan/muget.git
     ```
 
-## Configuration
+## Configuration:
 
   The first time MuGet runs, it automatically creates a configuration file:
 
