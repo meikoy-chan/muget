@@ -39,46 +39,45 @@ Before using MuGet, make sure the following tools are installed and available in
 
 ## Installation
 
-In your terminal type:
+  In your terminal type:
 
-  ```bash
-  pip install git+https://github.com/meikoy-chan/muget.git
-  ```
+    ```bash
+    pip install git+https://github.com/meikoy-chan/muget.git
+    ```
 
 ## Configuration
 
-The first time MuGet runs, it automatically creates a configuration file:
+  The first time MuGet runs, it automatically creates a configuration file:
 
-- **Linux:**
-  ```bash
-  ~/muget.json
-  ```
-- **Windows:**
-  ```bash
-  C:\Users\<username>\muget.json
-  ```
+-   **Linux:**
+      ```bash
+      ~/muget.json
+      ```
+-   **Windows:**
+      ```bash
+      C:\Users\<username>\muget.json
+      ```
 
-**Default configuration:**
+    **Default configuration:**
 
-```json
-{
-    "audio_itag": "140",
-    "output_directory": "YouTube Music",
-    "delay_between_downloads": 1,
-    "embed_cover": true,
-    "cover_size": 1400,
-    "cover_quality": 90,
-    "save_cover": false,
-    "skip_existing": true,
-    "cookies_path": null,
-    "po_token": null,
-    "replaygain": false,
-    "use_aria2c": false,
-    "log_level": "INFO"
-}
-```
-
-> **Tip:** Edit this file to customize MuGet's behavior.
+    ```json
+    {
+        "audio_itag": "140",
+        "output_directory": "YouTube Music",
+        "delay_between_downloads": 1,
+        "embed_cover": true,
+        "cover_size": 1400,
+        "cover_quality": 90,
+        "save_cover": false,
+        "skip_existing": true,
+        "cookies_path": null,
+        "po_token": null,
+        "replaygain": false,
+        "use_aria2c": false,
+        "log_level": "INFO"
+    }
+    ```
+    > **Tip:** Edit this file to customize MuGet's behavior.
 
 ### Configuration Options
 
