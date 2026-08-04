@@ -19,7 +19,7 @@ Download music from YouTube Music.
     
       ### Example:
         <details>
-        <summary>Da click para ver la info.</summary>  
+        <summary>Example:</summary>  
           
         ```text
         Input #0, ogg, from '05 - Uma Thurman.opus':
