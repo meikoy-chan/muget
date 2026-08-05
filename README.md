@@ -1,7 +1,6 @@
 # MuGet
+Downloads music from YouTube Music: songs, albums, and public playlists.
     
-    Downloads music from YouTube Music: songs, albums, and public playlists.
-
 ## Features:
 
   * MuGet automatically embed metadata into audio file:
@@ -18,7 +17,7 @@
     - `credits` (when available)
     
         <details>
-        <summary>*Example:*</summary>  
+        <summary>**Example:**</summary>  
           
         ```text
         Input #0, ogg, from '05 - Uma Thurman.opus':
