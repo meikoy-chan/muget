@@ -1,6 +1,6 @@
 # MuGet
-
-Download music from YouTube Music.
+    
+    Downloads music from YouTube Music: songs, albums, and public playlists.
 
 ## Features:
 
@@ -17,9 +17,8 @@ Download music from YouTube Music.
     - `lyrics` (when available)
     - `credits` (when available)
     
-      ### Example:
         <details>
-        <summary>Example:</summary>  
+        <summary>*Example:*</summary>  
           
         ```text
         Input #0, ogg, from '05 - Uma Thurman.opus':
