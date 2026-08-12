@@ -26,7 +26,7 @@ keywords = [
 
 dependencies = [
   "click",
-  "ytmusicapi==1.12.0",
+  "ytmusicapi==1.12.2",
   "yt-dlp",
   "colorama"
 ]
