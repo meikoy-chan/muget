@@ -703,14 +703,16 @@ class YouTubeMusicDownloader:
         
         if self.config.get("replaygain"):
             logger.debug("Calculating ReplayGain...")
-            try:
-                subprocess.run(
-                    ["rsgain", "easy", str(self.output_dir)], check=True)
-                logger.info("ReplayGain written")
-            except FileNotFoundError:
-                logger.warning("rsgain not installed")
-            except subprocess.CalledProcessError as e:
-                logger.warning(f"ReplayGain failed: {e}")
+            album_count = 0
+            for artist_dir in self.output_dir.iterdir():
+                if not artist_dir.is_dir():
+                    continue
+                for album_dir in artist_dir.iterdir():
+                    if not album_dir.is_dir():
+                        continue
+                    self.calculate_replaygain_album(album_dir)
+                    album_count += 1
+            logger.info(f"ReplayGain calculated for {album_count} albums") 
         
         logger.info(f"Done: {successful} downloaded, {failed} failed, {skipped} skipped")             
     
