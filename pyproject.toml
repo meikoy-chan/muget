@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "muget"
+version = "4.0.3"
+description = "YouTube Music downloader with tags embed"
+readme = "README.md"
+requires-python = ">=3.10"
+
+authors = [
+  { name = "meikoy-chan" }
+]
+
+license = "MIT"
+license-files = ["LICENSE"]
+
+keywords = [
+  "ytmusicapi",
+  "music",
+  "yt-dlp",
+  "music-downloader",
+  "dowloader"
+]
+
+dependencies = [
+  "click",
+  "ytmusicapi==1.12.2",
+  "yt-dlp",
+  "mutagen",
+  "colorama"
+]
+
+[project.urls]
+Homepage = "https://github.com/meikoy-chan/muget"
+Repository = "https://github.com/meikoy-chan/muget"
+
+[project.scripts]
+muget = "muget.cli:main"
